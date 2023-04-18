@@ -11,7 +11,8 @@ class Config {
   public CLIENT_URL: string | undefined;
   public REDIS_HOST: string | undefined;
 
-  private readonly DEFAULT_DATABSE_URL = 'mongodb://localhost:27017/chattyapp-backend';
+  private readonly DEFAULT_DATABSE_URL =
+    'mongodb://localhost:27017/chattyapp-backend';
 
   constructor() {
     this.DATABSE_URL = process.env.DATABSE_URL || this.DATABSE_URL;
@@ -24,12 +25,12 @@ class Config {
   }
 
   public validateConfig(): void {
-    for(const [key, value] of Object.entries(this)) {
+    for (const [key, value] of Object.entries(this)) {
       if (value === undefined) {
-        throw new Error(`Configuration ${key} is undefined.`)
+        throw new Error(`Configuration ${key} is undefined.`);
       }
     }
   }
-};
+}
 
 export const config: Config = new Config();
