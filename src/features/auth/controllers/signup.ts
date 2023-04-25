@@ -1,3 +1,4 @@
+import HTTP_STATUS from 'http-status-codes';
 import { ObjectId } from 'mongodb';
 import { Request, Response } from 'express';
 import { joiValidation } from '@global/decorators/joi-validation.decorators';
@@ -33,6 +34,7 @@ export class SignUp {
 		if (!result?.public_id) {
 			throw new BadRequestError('File upload: Error occured. Try again.');
 		}
+		res.status(HTTP_STATUS.CREATED).json({ message: 'User created successfully' });
 	}
 
 	private signupData(data: ISignUpData): IAuthDocument {
