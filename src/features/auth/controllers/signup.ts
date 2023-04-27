@@ -9,6 +9,10 @@ import { BadRequestError } from '@global/helpers/error-handler';
 import { Helpers } from '@global/helpers/helpers';
 import { UploadApiResponse } from 'cloudinary';
 import { uploads } from '@global/helpers/cloudinary-uploads';
+import { IUserDocument } from '@user/interfaces/user.interface';
+import { UserCache } from '@service/redis/user.cache';
+
+const userCache: UserCache = new UserCache();
 
 export class SignUp {
 	@joiValidation(signupSchema)
@@ -34,6 +38,12 @@ export class SignUp {
 		if (!result?.public_id) {
 			throw new BadRequestError('File upload: Error occured. Try again.');
 		}
+
+		// add to redis cache
+		const userDataForCache: IUserDocument = SignUp.prototype.userData(authData, userObjectId);
+		userDataForCache.profilePicture = `https://res/cloudinary.com/dq84oovel/image/upload/v${result.version}/${userObjectId}`;
+		await userCache.saveUserToCache(`${userObjectId}`, uId, userDataForCache);
+
 		res.status(HTTP_STATUS.CREATED).json({ message: 'User created successfully' });
 	}
 
@@ -48,5 +58,42 @@ export class SignUp {
 			avatarColor,
 			createdAt: new Date()
 		} as IAuthDocument;
+	}
+
+	private userData(data: IAuthDocument, userObjectId: ObjectId): IUserDocument {
+		const { _id, username, email, uId, password, avatarColor } = data;
+		return {
+			_id: userObjectId,
+			authId: _id,
+			uId,
+			username: Helpers.firstLetterUpperCase(username),
+			email,
+			password,
+			avatarColor,
+			profilePicture: '',
+			blocked: [],
+			blockedBy: [],
+			work: '',
+			location: '',
+			school: '',
+			quote: '',
+			bgImageVersion: '',
+			bgImageId: '',
+			followersCount: 0,
+			followingCount: 0,
+			postsCount: 0,
+			notifications: {
+				messages: true,
+				reactions: true,
+				comments: true,
+				follows: true
+			},
+			social: {
+				facebook: '',
+				instagram: '',
+				twitter: '',
+				youtube: ''
+			}
+		} as unknown as IUserDocument;
 	}
 }
